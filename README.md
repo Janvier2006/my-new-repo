@@ -1,4 +1,4 @@
-roject Description
+Project Description
 
 This project, titled “Rwanda’s Next Big Export Opportunity: Hass Avocado Production and Export Growth,” identifies and analyzes the potential of Hass avocado as a major export product that can drive Rwanda’s economic growth.
 
