@@ -1,0 +1,204 @@
+"""
+make_avocado_pptx.py
+
+Creates a professional PowerPoint presentation:
+"Rwanda’s Next Big Export Opportunity: Hass Avocado Production and Export Growth"
+
+Dependencies:
+    pip install python-pptx matplotlib pandas
+
+Run:
+    python make_avocado_pptx.py
+"""
+
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+import matplotlib.pyplot as plt
+import pandas as pd
+import os
+
+# ----------------------------
+# Configuration / Data
+# ----------------------------
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+PPTX_FILENAME = os.path.join(OUTPUT_DIR, "Rwanda_Hass_Avocado_Export_Project.pptx")
+TABLE_IMAGE = os.path.join(OUTPUT_DIR, "export_data_table.png")
+CHART_IMAGE = os.path.join(OUTPUT_DIR, "export_growth_chart.png")
+
+# Example data (you can replace with real dataframes or CSV loads)
+data_table = {
+    "Indicator": ["Horticulture Exports (US$M)", "Fruit Exports (US$M)", "Share of Avocados (%)"],
+    "2022/23": [58, 19, 45],
+    "2023/24": [75, 34.7, 55]
+}
+df = pd.DataFrame(data_table)
+
+years = ["2022/23", "2023/24"]
+horticulture = [58, 75]
+fruits = [19, 34.7]
+
+# ----------------------------
+# Helper: create table image
+# ----------------------------
+def create_table_image(df, outpath):
+    """
+    Renders a pandas DataFrame as an image using matplotlib table and saves it.
+    """
+    fig, ax = plt.subplots(figsize=(8, 2.2))
+    ax.axis("off")
+    ax.axis("tight")
+    # Create table
+    table = ax.table(cellText=df.values, colLabels=df.columns, cellLoc='center', loc='center')
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.3)
+    plt.tight_layout()
+    fig.savefig(outpath, bbox_inches="tight", dpi=150)
+    plt.close(fig)
+
+# ----------------------------
+# Helper: create line chart image
+# ----------------------------
+def create_line_chart(years, horticulture, fruits, outpath):
+    """
+    Creates a line chart of horticulture and fruit exports and saves it.
+    """
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.plot(years, horticulture, marker="o", label="Horticulture Exports (US$M)")
+    ax.plot(years, fruits, marker="o", label="Fruit Exports (US$M)")
+    ax.set_title("Rwanda Export Growth (2022/23–2023/24)")
+    ax.set_xlabel("Year")
+    ax.set_ylabel("Value (US$ Million)")
+    ax.legend()
+    ax.grid(True)
+    plt.tight_layout()
+    fig.savefig(outpath, bbox_inches="tight", dpi=150)
+    plt.close(fig)
+
+# ----------------------------
+# Build images
+# ----------------------------
+create_table_image(df, TABLE_IMAGE)
+create_line_chart(years, horticulture, fruits, CHART_IMAGE)
+
+# ----------------------------
+# Build presentation
+# ----------------------------
+prs = Presentation()
+
+# Use a clean blank layout for title slide (layout 6 is usually blank)
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+title_box = slide.shapes.add_textbox(Inches(1), Inches(2.2), Inches(8.5), Inches(1.2))
+title_tf = title_box.text_frame
+title_tf.text = "Rwanda’s Next Big Export Opportunity:\nHass Avocado Production and Export Growth"
+p = title_tf.paragraphs[0]
+p.font.size = Pt(34)
+p.font.bold = True
+p.font.color.rgb = RGBColor(0, 102, 0)
+
+# Slide helper to add title + body (uses layout index 1 which commonly has title + content)
+def add_title_body_slide(title, body_text):
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    slide.shapes.title.text = title
+    # layout[1] usually has placeholder 1 as the body
+    body = slide.placeholders[1]
+    body.text = body_text
+    return slide
+
+# Slide 2: Introduction
+intro_text = (
+    "Rwanda’s economy relies heavily on coffee, tea, and minerals. With favorable climate and \n"
+    "fertile soil, high-value horticulture—especially Hass avocados—offers strong potential \n"
+    "for export diversification and job creation."
+)
+add_title_body_slide("Introduction", intro_text)
+
+# Slide 3: Problem Statement
+problem_text = (
+    "Rwanda’s export base remains narrow and vulnerable to global price shocks. Despite agro-climatic \n"
+    "advantages, horticulture is constrained by limited cold-chain infrastructure, weak market data, \n"
+    "and certification barriers which limit access to high-value markets."
+)
+add_title_body_slide("Problem Statement", problem_text)
+
+# Slide 4: Objectives
+objectives_text = (
+    "General Objective:\nTo analyze how Hass avocados can become Rwanda's next major export.\n\n"
+    "Specific Objectives:\n• Assess horticultural export trends\n• Examine avocado production potential\n"
+    "• Identify global market opportunities\n• Recommend strategies to scale exports"
+)
+add_title_body_slide("Objectives", objectives_text)
+
+# Slide 5: Export Data Table (image)
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+slide.shapes.title.text = "Export Performance Data"
+slide.shapes.add_picture(TABLE_IMAGE, Inches(0.6), Inches(1.4), width=Inches(9.0))
+
+# Slide 6: Export Growth Chart (image)
+slide = prs.slides.add_slide(prs.slide_layouts[5])
+slide.shapes.title.text = "Rwanda Export Growth (2022/23–2023/24)"
+slide.shapes.add_picture(CHART_IMAGE, Inches(0.6), Inches(1.2), width=Inches(9.0))
+
+# Slide 7: Opportunities
+opp_text = (
+    "• Ideal agro-climatic conditions for Hass varieties\n"
+    "• Growing demand in EU, UK, and Middle East\n"
+    "• Government support for export diversification\n"
+    "• Significant job creation potential\n"
+    "• Value-add through processing (oil, pulp, cosmetics)"
+)
+add_title_body_slide("Opportunities in Hass Avocado Exports", opp_text)
+
+# Slide 8: Challenges
+challenges_text = (
+    "• Perishability and limited cold-chain infrastructure\n"
+    "• Need for export certifications (GlobalG.A.P, SPS compliance)\n"
+    "• Farmer training and aggregation gaps\n"
+    "• Strong competition from established exporters (Kenya, Peru)\n"
+    "• Financing barriers for processing and packing facilities"
+)
+add_title_body_slide("Challenges", challenges_text)
+
+# Slide 9: Strategies & Solutions
+strategies_text = (
+    "• Invest in cold-chain and packing facilities\n"
+    "• Organize and train farmers; strengthen cooperatives\n"
+    "• Support certification and traceability programs\n"
+    "• Build processing capacity for frozen pulp and oil\n"
+    "• Secure long-term offtake agreements with international buyers"
+)
+add_title_body_slide("Proposed Strategies and Solutions", strategies_text)
+
+# Slide 10: Expected Outcomes
+outcomes_text = (
+    "• Avocado export revenue target: > US$100M by 2030 (ambitious projection)\n"
+    "• Creation of 50,000+ direct and indirect jobs\n"
+    "• Reduced reliance on coffee and minerals\n"
+    "• Increased farmer incomes and rural development"
+)
+add_title_body_slide("Expected Outcomes", outcomes_text)
+
+# Slide 11: Conclusion
+conclusion_text = (
+    "Hass avocados present a realistic, data-driven export opportunity. By investing in infrastructure, \n"
+    "certification and value addition, Rwanda can scale horticultural exports and generate sustainable \n"
+    "economic benefits."
+)
+add_title_body_slide("Conclusion", conclusion_text)
+
+# Optional: References slide
+refs = (
+    "References / Sources:\n"
+    "- NAEB Annual Report (2023/24)\n"
+    "- Rwanda Development Board: Agriculture Investment Notes\n"
+    "- FAOSTAT / ITC Trade Map (2023/24)\n"
+)
+add_title_body_slide("References", refs)
+
+# Save presentation
+prs.save(PPTX_FILENAME)
+print(f"Presentation saved to: {PPTX_FILENAME}")
+
